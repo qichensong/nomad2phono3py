@@ -9,8 +9,8 @@ class material:
 	def __init__(self, id, subid, dbasedir, destdir):
 		# For example, mp-21511 has id = "21511", also material project id
 		self.id = id
-		self.subid = subid
-		self.dbasedir = dbasedir
+		self.subid = subid # usually 1
+		self.dbasedir = dbasedir # work the nomad is
 		self.destdir = destdir # directory to slurm job 
 	def get_abinit_vars(self): 
         # We assume a linux file system
@@ -37,8 +37,8 @@ class material:
 				break
 
 		# read positions
-		self.natm = int(self.entries['natom'])
-		self.pos = np.zeros((self.natm,3),dtype=float)
+		self.natm = int(self.entries['natom']) # number of atoms
+		self.pos = np.zeros((self.natm,3),dtype=float) # fractional coordinates
 
 		# locate the postion section
 		for i,lin in enumerate(lines):
@@ -55,23 +55,32 @@ class material:
 			if lin.split() == ['rprim']:
 				break
 		i = i + 1
-		self.cell = np.zeros((3,3))
+		self.cell = np.zeros((3,3)) # lattice cell vectors
 		for j in range(i,i+3):
 			self.cell[j-i,:] = np.array(lines[j].split()[:],dtype=float)
 
 		# locate the atom type section
-		for i,lin in enumerate(lines):
-			if lin.split() == ['typat']:
-				break
-		i = i + 1
 		self.atype = np.zeros((self.natm,),dtype=int)
-		for j in range(i,i-(self.natm//-3)):
-			nc = len(lines[j].split())
-			self.atype[(j-i)*3:(j-i)*3+nc] = np.array(lines[j].split()[:],dtype=int)
+		if self.natm>3:
+			for i,lin in enumerate(lines):
+				if lin.split() == ['typat']:
+					break
+			i = i + 1
+			for j in range(i,i-(self.natm//-3)):
+				nc = len(lines[j].split())
+				self.atype[(j-i)*3:(j-i)*3+nc] = np.array(lines[j].split()[:],dtype=int)
+		else:
+			for i,lin in enumerate(lines):
+				if len(lin.split())>1:
+					if lin.split()[0] == 'typat':
+						self.atype[:] = np.array(lin.split()[1:self.natm+1])
+						break
+
+
 
 		# locate the charge of atom nucleus section
 		self.ntypat = int(self.entries['ntypat'])
-		self.z = np.zeros((self.ntypat,),dtype=int)
+		self.z = np.zeros((self.ntypat,),dtype=int) # Z values in psps
 
 		if self.ntypat>3:
 			for i,lin in enumerate(lines):
@@ -108,15 +117,21 @@ class material:
 # Remove -sp, this might not be correct. We should download all pseudopotential files
 			lin0 = re.sub('-sp','',lin0)
 			lin0 = re.sub('-p','',lin0)
-			lin0 = re.sub('-d','',lin0)
+			lin0 = re.sub('-d','',lin0) # this is not the best solution
 			newline.append(lin0)
 		self.psJSON = newline 
 		
 		
 
-	def gen_header(self):
+	def gen_header(self,nx,ny,nz):
+		# Supercell dimensions 
+		self.nx = nx # supercell sizes for phono3py
+		self.ny = ny
+		self.nz = nz
+
+
 		self.workdir = os.path.join(self.destdir, self.id + '_' + self.subid)
-		os.system('mkdir -p '+self.workdir)
+		os.system('mkdir -p '+self.workdir) # if not existing, create a new folder
 
 		# Copy the files	
 		os.system('cp '+os.path.join(self.dfiledir,'*')+' '+self.workdir)
@@ -124,17 +139,18 @@ class material:
 		self.headerfile = os.path.join(self.workdir,'header.in')
 		f = open(self.headerfile,'w')
 		f.write('#################\n')
-		f.write('paral_kgb 1\n')
-		f.write('occopt 7\n')
-		f.write('tsmear 0.01\n')
+		f.write('paral_kgb 1\n') # parallel
+
+		# Gaussian smearing
+		#f.write('occopt 7\n')
+		#f.write('tsmear 0.01\n')
+		# end Gaussian smearing
 
 		# tolvrs: The default value implies that this stopping condition is ignored.
 		f.write('tolvrs 1.0d-10\n')
 		f.write('pp_dirpath ' + '\"/work2/09337/qcsong/frontera/pbe_s_sr041/\"\n')
 		# write pseudos
 		f.write('pseudos \"')
-
-
 		idx = np.zeros((self.ntypat,),dtype=int)
 		ps = []
 		for lin in self.psJSON:
@@ -149,7 +165,6 @@ class material:
 				for i in range(self.ntypat):
 					if ZZ == self.z[i]:
 						idx[i]=count
-
 
 		count = -1
 		for lin in self.psJSON:
@@ -167,19 +182,24 @@ class material:
 		for k in keywd:
 			f.write(k+' '+self.entries[k]+'\n')
 
+		# write nbands
+		# larger cell, more bands
+		f.write('nband '+str(int(self.entries['nband'])*nx*ny*nz)+'\n')
+
 		# write shiftk
 		f.write('shiftk\n')
 		f.write('{: f} {: f} {: f}\n'.format(self.kshift[0],self.kshift[1],self.kshift[2]))
 
 		# this part need to optimized according to number of atms in u.c.
 		# read from .abi file first
-		f.write('ngkpt {: d} {: d} {: d}\n'.format(self.kgrid[0],self.kgrid[1],self.kgrid[2]))
+		f.write('ngkpt {: d} {: d} {: d}\n'.format(self.kgrid[0]//nx,self.kgrid[1]//ny,self.kgrid[2]//nz))
 		f.close()
 
 		self.structfile = os.path.join(self.workdir,'pc.in')
 		# This file shares the same header part except the k point grids
 		os.system('cp '+self.headerfile+' '+self.structfile)
-
+		
+		# adding position info to the structure file
 		f = open(self.structfile,'a')
 
 		keywd = ['ntypat','natom']
@@ -215,17 +235,14 @@ class material:
 			f.write('\n')
 	
 		f.close()
+		# make it executeble (not necessary)
 		os.system('chmod +x '+ self.structfile)
 	
-	def run_phono3py(self,nx,ny,nz):
-		# Supercell dimensions 
-		self.nx = nx
-		self.ny = ny
-		self.nz = nz
+	def run_phono3py(self):
 		os.chdir(self.workdir)
         ## run phono3py 
-		os.system("phono3py --abinit -d --dim=\""+str(nx)+' '\
-				+str(ny)+' '+str(nz)+"\" -c " +self.structfile)
+		os.system("phono3py --abinit -d --dim=\""+str(self.nx)+' '\
+				+str(self.ny)+' '+str(self.nz)+"\" -c " +self.structfile)
 		##
 
 		dirs=glob.glob(os.path.join(self.workdir,"supercell-*.in"))
@@ -250,6 +267,6 @@ class material:
 		f.write("   cat header.in supercell-$i.in >| disp-$i.in;\n")
 		f.write("   abinit disp-$i.in >& log\ndone\n")
 		f.close()
-		os.system('sbatch run.sh')
+		#os.system('sbatch run.sh')
 
 

@@ -4,8 +4,9 @@ import os
 from collections import defaultdict
 import time
 
-def managing_job(workdir,jobid):
+def managing_job(workdir0,jobid):
 	# Go to work directory
+	workdir = os.path.join(workdir0,jobid)
 	os.chdir(workdir)
 	while True:
 		# keep monitoring
@@ -13,12 +14,12 @@ def managing_job(workdir,jobid):
 		# total number of displacements that need to be computed
 		ndisp = len(dirs) 
 		# 1. Find out current job overall progress 
-		dirs=glob.glob(os.path.join(workdir,"Si.abo"))
+		dirs=glob.glob(os.path.join(workdir,"disp-*.abo"))
 		# number of finished displacements
 		ncurrent = len(dirs)
 		if ncurrent == 0:
 			ncurrent = 1
-		print('{:.2f}'.format((ncurrent-1)/(ndisp))+' % finished')
+		print('{:.2f}'.format((ncurrent-1)/(ndisp)*100)+' % finished')
 
 		# Talk to slurm
 		## query scheduler for running jobs
@@ -41,7 +42,8 @@ def managing_job(workdir,jobid):
 			counts[ pieces[2] ] += 1
 		
 		# number of jobs associated with this jobid
-		# if zero, need to submit a new one
+		# if zero, meaning that there is no active jobs
+		# need to submit a new one
 		if counts[jobid] == 0:
 			f = open(os.path.join(workdir,"run.sh"),'r')
 			lines = f.readlines()
@@ -49,7 +51,6 @@ def managing_job(workdir,jobid):
 
 			for i,lin in enumerate(lines):
 				if '}' in lin:
-					print(lin)
 					break
 
 			# update the new starting file
@@ -57,11 +58,14 @@ def managing_job(workdir,jobid):
 			f = open(os.path.join(workdir,"run.sh"),'w')
 			f.writelines(lines)
 			f.close()
-		time.sleep(1800)
+			os.system('sbatch run.sh')
+		# check job status every x seconds
+		x = 600
+		time.sleep(x)
 
 
 if __name__ == "__main__":
-	managing_job('/work2/09337/qcsong/frontera/nomad2phono3py/jobs/4961_1','4961_1')	 
+	managing_job('/work2/09337/qcsong/frontera/nomad2phono3py/jobs/','1000_1')	 
 	
 
 
