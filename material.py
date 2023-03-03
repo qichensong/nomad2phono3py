@@ -150,7 +150,7 @@ class material:
 
 		# tolvrs: The default value implies that this stopping condition is ignored.
 		f.write('tolvrs 1.0d-10\n')
-		f.write('pp_dirpath ' + '\"/work2/09337/qcsong/frontera/pbe_s_sr041/\"\n')
+		f.write('pp_dirpath ' + '\"/work2/09337/qcsong/frontera/ONCVPSP-PBEsol-PDv0.3/\"\n')
 		# write pseudos
 		f.write('pseudos \"')
 		idx = np.zeros((self.ntypat,),dtype=int)
