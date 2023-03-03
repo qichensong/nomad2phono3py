@@ -118,7 +118,8 @@ class material:
 # 			lin0 = re.sub('-sp','',lin0)
 # 			lin0 = re.sub('-p','',lin0)
 # 			lin0 = re.sub('-d','',lin0) # this is not the best solution
-			lin0 = re.sub(r"/global/u1/p/petretto/software/python/mendel/gp_phonons_matgen/codes/pseudo_dojo/pseudo_dojo/pseudos/ONCVPSP-PBEsol-PDv0.3/","/work2/09337/qcsong/frontera/ONCVPSP-PBEsol-PDv0.3/",lin)
+			lin0 = re.sub(r"/global/u1/p/petretto/software/python/mendel/gp_phonons_matgen/codes/pseudo_dojo/pseudo_dojo/pseudos/ONCVPSP-PBEsol-PDv0.3/",
+                 "/work2/09337/qcsong/frontera/ONCVPSP-PBEsol-PDv0.3/",lin)
 			newline.append(lin0)
 		self.psJSON = newline 
 		
