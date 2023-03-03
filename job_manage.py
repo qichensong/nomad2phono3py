@@ -5,10 +5,11 @@ from collections import defaultdict
 import time
 
 def managing_job(workdir0,jobid):
+	unfinished = 1
 	# Go to work directory
 	workdir = os.path.join(workdir0,jobid)
 	os.chdir(workdir)
-	while True:
+	while unfinished:
 		# keep monitoring
 		dirs=glob.glob(os.path.join(workdir,"supercell-*.in"))
 		# total number of displacements that need to be computed
@@ -44,6 +45,8 @@ def managing_job(workdir0,jobid):
 		# number of jobs associated with this jobid
 		# if zero, meaning that there is no active jobs
 		# need to submit a new one
+		if counts[jobid] == 0 and ncurrent == ndisp: 
+			unfinished = 0
 		if counts[jobid] == 0:
 			f = open(os.path.join(workdir,"run.sh"),'r')
 			lines = f.readlines()
@@ -59,6 +62,7 @@ def managing_job(workdir0,jobid):
 			f.writelines(lines)
 			f.close()
 			os.system('sbatch run.sh')
+
 		# check job status every x seconds
 		x = 600
 		time.sleep(x)
