@@ -46,9 +46,9 @@ def managing_job(workdir0,jobid):
 		# number of jobs associated with this jobid
 		# if zero, meaning that there is no active jobs
 		# need to submit a new one
-		if counts[jobid] == 0 and ncurrent >= ndisp: 
+		if counts[jobid] == 0 and ncurrent > ndisp: 
 			unfinished = 0
-		if counts[jobid] == 0 and ncurrent < ndisp:
+		if counts[jobid] == 0 and ncurrent <= ndisp:
 			f = open(os.path.join(workdir,"run.sh"),'r')
 			lines = f.readlines()
 			f.close()
