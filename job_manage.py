@@ -46,9 +46,9 @@ def managing_job(workdir0,jobid):
 		# number of jobs associated with this jobid
 		# if zero, meaning that there is no active jobs
 		# need to submit a new one
-		if counts[jobid] == 0 and ncurrent == ndisp: 
+		if counts[jobid] == 0 and ncurrent >= ndisp: 
 			unfinished = 0
-		if counts[jobid] == 0:
+		if counts[jobid] == 0 and ncurrent < ndisp:
 			f = open(os.path.join(workdir,"run.sh"),'r')
 			lines = f.readlines()
 			f.close()
@@ -63,7 +63,7 @@ def managing_job(workdir0,jobid):
 			f.writelines(lines)
 			f.close()
 			finalinput = os.path.join(workdir,'disp-'+'{0:05d}'.format(ndisp)+'.abo')
-			if if_file(finalinput):
+			if os.path.exists(finalinput):
 				f = open(finalinput,'r')
 				lines = f.readlines()
 				if re.search("Overall time",lines[-1]):
