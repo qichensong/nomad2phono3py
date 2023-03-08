@@ -3,6 +3,7 @@ import subprocess as sp
 import os
 from collections import defaultdict
 import time
+import re
 
 def managing_job(workdir0,jobid):
 	unfinished = 1
@@ -61,7 +62,16 @@ def managing_job(workdir0,jobid):
 			f = open(os.path.join(workdir,"run.sh"),'w')
 			f.writelines(lines)
 			f.close()
-			os.system('sbatch run.sh')
+			finalinput = os.path.join(workdir,'disp-'+'{0:05d}'.format(ndisp)+'.abo')
+			if if_file(finalinput):
+				f = open(finalinput,'r')
+				lines = f.readlines()
+				if re.search("Overall time",lines[-1]):
+					unfinished = 1	
+				else:
+					os.system('sbatch run.sh')
+			else:
+				os.system('sbatch run.sh')
 
 		# check job status every x seconds
 		x = 600
