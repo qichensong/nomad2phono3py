@@ -13,5 +13,6 @@ m1.get_abinit_vars()
 m1.gen_header(2,2,2)
 m1.run_phono3py()
 # -N nodes -n cores
-m1.gen_job_scripts(1,1)
+m1.gen_job_scripts(1,1,'normal')
+m1.gen_job_scripts_multi(1,1,'normal')
 managing_job(jobdir,mpid+'_'+subid)

@@ -251,7 +251,7 @@ class material:
 		# total number of displacement files
 		self.n_disp_tot = len(dirs)
 
-	def gen_job_scripts(self,N,n):
+	def gen_job_scripts(self,N,n,P):
 		# The slurm job name
 		self.jobid = self.id+'_'+self.subid
 		# Go to work directory 
@@ -260,7 +260,7 @@ class material:
 		# jobs are finished, new jobs are submitted immediatedly
 		template = Template(input_template)
 
-		template = template.substitute(job=self.jobid,N=N,n=n)
+		template = template.substitute(job=self.jobid,N=N,n=n,P=P)
 
 		self.runscript = os.path.join(self.workdir,'run.sh')
 		f = open(self.runscript,'w')
@@ -270,5 +270,22 @@ class material:
 		f.write("   abinit disp-$i.in >& log\ndone\n")
 		f.close()
 		#os.system('sbatch run.sh')
+	def gen_job_scripts_multi(self,N,n,P):
+		# The slurm job name
+		# Go to work directory 
+		os.chdir(self.workdir)
+		# The job should be monitored such that when old
+		# jobs are finished, new jobs are submitted immediatedly
+		template = Template(input_template)
+		for i in range(self.n_disp_tot):
+			template = template.substitute(job=self.id+'_'+str(i),N=N,n=n,P=P)
+			ii = '{0:05d}'.format(i)
+			scriptname = 'run_'+ii+'.sh'
+			self.runscript = os.path.join(self.workdir,scriptname)
+			f = open(self.runscript,'w')
+			f.write(template)
+			f.write("   cat header.in supercell-"+ii+".in >| disp-"+ii+".in;\n")
+			f.close()
+			os.system('sbatch '+scriptname)
 
 
