@@ -6,10 +6,10 @@ jobdir='/work2/09337/qcsong/frontera/nomad2phono3py/jobs/'
 psdir='/work2/09337/qcsong/frontera/ONCVPSP-PBEsol-PDv0.3/'
 mpid = '21511' # 12 atom uc
 mpid = '4961' # 5 atom uc
-mpid = '1000' # 2 atomc uc
+mpid = '149' # 2 atomc uc
 subid = '1'
 queue='normal'
-njob = 6    # number of parallel jobs
+njob = 8    # number of parallel jobs
 m1 = material(mpid,subid,nomaddir,jobdir,psdir)
 m1.get_abinit_vars()
 # nx, ny, nz
