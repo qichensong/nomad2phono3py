@@ -12,7 +12,7 @@ class material:
 		self.subid = subid # usually 1
 		self.dbasedir = dbasedir # work the nomad is
 		self.destdir = destdir # directory to slurm job 
-  		self.psdir = psdir # directory of pseudopotential files
+		self.psdir = psdir # directory of pseudopotential files
 	def get_abinit_vars(self): 
         # We assume a linux file system
 		self.dfiledir = os.path.join(self.dbasedir,'mp-'+self.id+'_scf_'+self.subid)
@@ -285,7 +285,7 @@ class material:
 			end = num_dict[str(idx)][-1] 
 			template = Template(input_template)
 			template = template.substitute(job=self.jobid,N=N,n=n,P=P)
-			print('after substitute: ', template)
+			# print('after substitute: ', template)
 
 			self.runscript = os.path.join(self.workdir,f'run_{idx}.sh')
 			f = open(self.runscript,'w')
