@@ -271,7 +271,6 @@ class material:
 		f.close()
 		
 	def gen_job_scripts_multi(self,N,n,njob,P):	
-		# The slurm job name
 		os.chdir(self.workdir)
 		dirs=glob.glob(os.path.join(self.workdir,"supercell-*.in"))
 		ndisp = len(dirs) 
