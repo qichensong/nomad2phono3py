@@ -6,6 +6,7 @@ jobdir='/work2/09337/qcsong/frontera/nomad2phono3py/jobs/'
 psdir='/work2/09337/qcsong/frontera/ONCVPSP-PBEsol-PDv0.3/'
 mpid = '21511' # 12 atom uc
 mpid = '4961' # 5 atom uc
+
 mpid = '149' # 2 atomc uc
 subid = '1'
 queue='normal'
