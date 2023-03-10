@@ -99,7 +99,8 @@ def managing_job(workdir0,jobid,njob):
 if __name__ == "__main__":
 	jobdir = '/work2/09337/qcsong/frontera/nomad2phono3py/jobs/'
 	mpid = '149'
-	managing_job(jobdir,mpid+'_1')	 
+    njob = 6 
+	managing_job(jobdir,mpid+'_1',njob)	 
     screen_incomplete(jobdir, f'{mpid}_1', run_job=True)	# check if all the jobs are completed and re-run if any of them is not perfect. 
 
 
