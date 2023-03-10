@@ -269,7 +269,7 @@ class material:
 		else:
 			f.write(f"   mpirun -x {N*n} abinit disp-$i.in >& log\ndone\n")
 		f.close()
-		#os.system('sbatch run.sh')
+		
 	def gen_job_scripts_multi(self,N,n,njob,P):	
 		# The slurm job name
 		os.chdir(self.workdir)
