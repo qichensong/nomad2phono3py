@@ -9,7 +9,7 @@ mpid = '4961' # 5 atom uc
 
 mpid = '149' # 2 atomc uc
 subid = '1'
-queue='normal'
+queue='flex'
 njob = 8    # number of parallel jobs
 m1 = material(mpid,subid,nomaddir,jobdir,psdir)
 m1.get_abinit_vars()
