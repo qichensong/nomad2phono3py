@@ -263,7 +263,11 @@ class material:
 		f.write(template)
 		f.write("for i in {{{0:05d}..{1:05d}}}\ndo\n".format(1,self.n_disp_tot))
 		f.write("   cat header.in supercell-$i.in >| disp-$i.in;\n")
-		f.write("   abinit disp-$i.in >& log\ndone\n")
+		# f.write("   abinit disp-$i.in >& log\ndone\n")
+		if P=='small':
+			f.write("   abinit disp-$i.in >& log\ndone\n")
+		else:
+			f.write(f"   mpirun -x {N*n} abinit disp-$i.in >& log\ndone\n")
 		f.close()
 		#os.system('sbatch run.sh')
 	def gen_job_scripts_multi(self,N,n,njob,P):	
@@ -292,7 +296,10 @@ class material:
 			f.write(template)
 			f.write("for i in {{{0:05d}..{1:05d}}}\ndo\n".format(start,end))
 			f.write("   cat header.in supercell-$i.in >| disp-$i.in;\n")
-			f.write("   abinit disp-$i.in >& log\ndone\n")
+			if P=='small':
+				f.write("   abinit disp-$i.in >& log\ndone\n")
+			else:
+				f.write(f"   mpirun -x {N*n} abinit disp-$i.in >& log\ndone\n")
 			f.close()
 
 

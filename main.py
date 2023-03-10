@@ -10,12 +10,14 @@ mpid = '1000' # 2 atomc uc
 subid = '1'
 queue='normal'
 njob = 6    # number of parallel jobs
+N=1
+n=1
 m1 = material(mpid,subid,nomaddir,jobdir,psdir)
 m1.get_abinit_vars()
 # nx, ny, nz
 m1.gen_header(2,2,2)
 m1.run_phono3py()
 # -N nodes -n cores
-m1.gen_job_scripts(1,1,queue)
-m1.gen_job_scripts_multi(1,1,njob,queue)
+m1.gen_job_scripts(N=N,n=n,P=queue)
+m1.gen_job_scripts_multi(N=N,n=n,njob=njob,P=queue)
 managing_job(jobdir,mpid+'_'+subid,njob)
