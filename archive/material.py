@@ -270,34 +270,22 @@ class material:
 		f.write("   abinit disp-$i.in >& log\ndone\n")
 		f.close()
 		#os.system('sbatch run.sh')
-	def gen_job_scripts(self,N,n,njob,P):	#!!
+	def gen_job_scripts_multi(self,N,n,P):
 		# The slurm job name
+		# Go to work directory 
 		os.chdir(self.workdir)
-		dirs=glob.glob(os.path.join(self.workdir,"supercell-*.in"))
-		ndisp = len(dirs) 
-		num_dict = {}
-		num = ndisp//njob +1
-		indices = range(1, ndisp+1)
-		for i in range(njob):
-			contents = sorted(list(indices[num*i:num*i+num]))
-			if len(contents) != 0:
-				num_dict[str(i)]=contents
-		njob_ = len(num_dict)
-		for idx in range(njob_):
-			self.jobid = self.id+'_'+self.subid + '_' + str(idx)
-			start = num_dict[str(idx)][0] 
-			end = num_dict[str(idx)][-1] 
-			template = Template(input_template)
-			template = template.substitute(job=self.jobid,N=N,n=n,P=P)
-			print('after substitute: ', template)
-
-			self.runscript = os.path.join(self.workdir,f'run_{idx}.sh')
+		# The job should be monitored such that when old
+		# jobs are finished, new jobs are submitted immediatedly
+		template = Template(input_template)
+		for i in range(self.n_disp_tot):
+			template = template.substitute(job=self.id+'_'+str(i),N=N,n=n,P=P)
+			ii = '{0:05d}'.format(i)
+			scriptname = 'run_'+ii+'.sh'
+			self.runscript = os.path.join(self.workdir,scriptname)
 			f = open(self.runscript,'w')
 			f.write(template)
-			f.write("for i in {{{0:05d}..{1:05d}}}\ndo\n".format(start,end))
-			f.write("   cat header.in supercell-$i.in >| disp-$i.in;\n")
-			f.write("   abinit disp-$i.in >& log\ndone\n")
+			f.write("   cat header.in supercell-"+ii+".in >| disp-"+ii+".in;\n")
 			f.close()
-			#os.system('sbatch run.sh')
+			os.system('sbatch '+scriptname)
 
 
