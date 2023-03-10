@@ -6,12 +6,13 @@ from string import Template
 from input_template import input_template
 
 class material:
-	def __init__(self, id, subid, dbasedir, destdir):
+	def __init__(self, id, subid, dbasedir, destdir, psdir):
 		# For example, mp-21511 has id = "21511", also material project id
 		self.id = id
 		self.subid = subid # usually 1
 		self.dbasedir = dbasedir # work the nomad is
 		self.destdir = destdir # directory to slurm job 
+  		self.psdir = psdir # directory of pseudopotential files
 	def get_abinit_vars(self): 
         # We assume a linux file system
 		self.dfiledir = os.path.join(self.dbasedir,'mp-'+self.id+'_scf_'+self.subid)
@@ -113,13 +114,8 @@ class material:
 		
 		newline = []
 		for lin in linesJ:
-# 			lin0 = re.sub(r"/global/u1/p/petretto/software/python/mendel/gp_phonons_matgen/codes/pseudo_dojo/pseudo_dojo/pseudos/ONCVPSP-PBEsol-PDv0.3/(.*)/","/work2/09337/qcsong/frontera/pbe_s_sr041/",lin)
-# # Remove -sp, this might not be correct. We should download all pseudopotential files
-# 			lin0 = re.sub('-sp','',lin0)
-# 			lin0 = re.sub('-p','',lin0)
-# 			lin0 = re.sub('-d','',lin0) # this is not the best solution
 			lin0 = re.sub(r"/global/u1/p/petretto/software/python/mendel/gp_phonons_matgen/codes/pseudo_dojo/pseudo_dojo/pseudos/ONCVPSP-PBEsol-PDv0.3/",
-                 "/work2/09337/qcsong/frontera/ONCVPSP-PBEsol-PDv0.3/",lin)
+                 self.psdir,lin)
 			newline.append(lin0)
 		self.psJSON = newline 
 		
@@ -150,7 +146,7 @@ class material:
 
 		# tolvrs: The default value implies that this stopping condition is ignored.
 		f.write('tolvrs 1.0d-10\n')
-		f.write('pp_dirpath ' + '\"/work2/09337/qcsong/frontera/ONCVPSP-PBEsol-PDv0.3/\"\n')
+		f.write('pp_dirpath ' + f'\"{self.psdir}\"\n')
 		# write pseudos
 		f.write('pseudos \"')
 		idx = np.zeros((self.ntypat,),dtype=int)
@@ -270,7 +266,7 @@ class material:
 		f.write("   abinit disp-$i.in >& log\ndone\n")
 		f.close()
 		#os.system('sbatch run.sh')
-	def gen_job_scripts(self,N,n,njob,P):	#!!
+	def gen_job_scripts_multi(self,N,n,njob,P):	
 		# The slurm job name
 		os.chdir(self.workdir)
 		dirs=glob.glob(os.path.join(self.workdir,"supercell-*.in"))
@@ -298,6 +294,6 @@ class material:
 			f.write("   cat header.in supercell-$i.in >| disp-$i.in;\n")
 			f.write("   abinit disp-$i.in >& log\ndone\n")
 			f.close()
-			#os.system('sbatch run.sh')
+
 
 
