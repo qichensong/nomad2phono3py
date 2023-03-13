@@ -10,8 +10,8 @@ mpid = '1000' # 2 atomc uc
 subid = '1'
 queue='normal'
 njob = 6    # number of parallel jobs
-N=1
-n=1
+N=3
+n=3
 m1 = material(mpid,subid,nomaddir,jobdir,psdir)
 m1.get_abinit_vars()
 # nx, ny, nz

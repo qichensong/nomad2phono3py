@@ -138,6 +138,7 @@ class material:
 		f = open(self.headerfile,'w')
 		f.write('#################\n')
 		f.write('paral_kgb 1\n') # parallel
+  		f.write('chkprim 0\n') # 
 
 		# Gaussian smearing
 		#f.write('occopt 7\n')
