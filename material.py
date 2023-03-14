@@ -296,7 +296,8 @@ class material:
 			if P=='small':
 				f.write("   abinit disp-$i.in >& log\ndone\n")
 			else:
-				f.write(f"   mpirun -x {N*n} abinit disp-$i.in >& log\ndone\n")
+				# f.write(f"   mpirun -x {N*n} abinit disp-$i.in >& log\ndone\n")
+    			f.write(f"   ibrun abinit disp-$i.in >& log\ndone\n")
 			f.close()
 
 
