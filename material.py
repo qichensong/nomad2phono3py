@@ -138,7 +138,7 @@ class material:
 		f = open(self.headerfile,'w')
 		f.write('#################\n')
 		f.write('paral_kgb 1\n') # parallel
-  		f.write('chkprim 0\n') # 
+		f.write('chkprim 0\n') # check primitive cell (default: 1)
 
 		# Gaussian smearing
 		#f.write('occopt 7\n')
@@ -197,7 +197,7 @@ class material:
 		self.structfile = os.path.join(self.workdir,'pc.in')
 		# This file shares the same header part except the k point grids
 		os.system('cp '+self.headerfile+' '+self.structfile)
-		
+
 		# adding position info to the structure file
 		f = open(self.structfile,'a')
 
@@ -232,7 +232,7 @@ class material:
 				if i*3+j<self.ntypat:
 					f.write('{: d} '.format(self.z[i*3+j]))
 			f.write('\n')
-	
+
 		f.close()
 		# make it executeble (not necessary)
 		os.system('chmod +x '+ self.structfile)

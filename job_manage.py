@@ -9,6 +9,7 @@ from read_abo import abo_done, screen_incomplete
 import numpy as np
 
 def managing_job(workdir0,jobid,njob):
+    starttime = datetime.now()
     unfinished = 1
     record = []
     workdir = os.path.join(workdir0,jobid)
@@ -39,9 +40,9 @@ def managing_job(workdir0,jobid,njob):
         ncurrent = len(dirs)
         if ncurrent == 0:
             ncurrent = 1
-        print(f'[{current_time}] ' +' {:.2f}'.format((ncurrent-1)/(ndisp)*100)+' % finished')
-        record.append(f'[{now}] ' +' {:.2f}'.format((ncurrent-1)/(ndisp)*100)+ f' % finished, remaining {dirs_dict}\n')		#!!
-        with open(f'{workdir}/{jobid}_log.txt', 'w') as ff:
+        print(f'[{current_time}] ({jobid}) ' +' {:.2f}'.format((ncurrent-1)/(ndisp)*100)+' % finished')
+        record.append(f'[{now}] ({jobid}) ' +' {:.2f}'.format((ncurrent-1)/(ndisp)*100)+ f' % finished, remaining {dirs_dict}\n')		#!!
+        with open(f'{workdir}/{jobid}_log_{starttime}.txt', 'w') as ff:
             for r in record:
                     ff.write(r)
         for j in range(njob_):

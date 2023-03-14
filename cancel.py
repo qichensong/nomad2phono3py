@@ -2,7 +2,13 @@ import os
 import argparse
 
 def cancel_jobs(start, end):
-    for i in range(int(start), int(end)+1):
+    if int(start) < int(end):
+        from_= start
+        to_= end
+    else:
+        from_= end
+        to_= start
+    for i in range(int(from_), int(to_)+1):
         print(f'scancel {i}')
         os.system(f'scancel {i}')
 
