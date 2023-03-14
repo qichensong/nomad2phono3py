@@ -264,11 +264,10 @@ class material:
 		f.write(template)
 		f.write("for i in {{{0:05d}..{1:05d}}}\ndo\n".format(1,self.n_disp_tot))
 		f.write("   cat header.in supercell-$i.in >| disp-$i.in;\n")
-		# f.write("   abinit disp-$i.in >& log\ndone\n")
 		if P=='small':
 			f.write("   abinit disp-$i.in >& log\ndone\n")
 		else:
-			f.write(f"   mpirun -x {N*n} abinit disp-$i.in >& log\ndone\n")
+			f.write(f"   ibrun {N*n} abinit disp-$i.in >& log\ndone\n")
 		f.close()
 		
 	def gen_job_scripts_multi(self,N,n,njob,P):	
@@ -289,8 +288,6 @@ class material:
 			end = num_dict[str(idx)][-1] 
 			template = Template(input_template)
 			template = template.substitute(job=self.jobid,N=N,n=n,P=P)
-			# print('after substitute: ', template)
-
 			self.runscript = os.path.join(self.workdir,f'run_{idx}.sh')
 			f = open(self.runscript,'w')
 			f.write(template)
