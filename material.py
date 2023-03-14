@@ -267,7 +267,7 @@ class material:
 		if P=='small':
 			f.write("   abinit disp-$i.in >& log\ndone\n")
 		else:
-			f.write(f"   ibrun {N*n} abinit disp-$i.in >& log\ndone\n")
+			f.write(f"   ibrun abinit disp-$i.in >& log\ndone\n")
 		f.close()
 		
 	def gen_job_scripts_multi(self,N,n,njob,P):	
