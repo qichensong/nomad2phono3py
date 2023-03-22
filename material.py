@@ -128,7 +128,8 @@ class material:
 		self.nz = nz
 
 
-		self.workdir = os.path.join(self.destdir, self.id + '_' + self.subid)
+		# self.workdir = os.path.join(self.destdir, self.id + '_' + self.subid)
+		self.workdir = os.path.join(self.destdir, self.id)	#!
 		os.system('mkdir -p '+self.workdir) # if not existing, create a new folder
 
 		# Copy the files	
@@ -250,7 +251,8 @@ class material:
 
 	def gen_job_scripts(self,N,n,P):
 		# The slurm job name
-		self.jobid = self.id+'_'+self.subid
+		# self.jobid = self.id+'_'+self.subid
+		self.jobid = self.id# +'_'+self.subid	#!
 		# Go to work directory 
 		os.chdir(self.workdir)
 		# The job should be monitored such that when old
@@ -267,7 +269,7 @@ class material:
 		if P=='small':
 			f.write("   abinit disp-$i.in >& log\ndone\n")
 		else:
-			f.write(f"   ibrun abinit disp-$i.in >& log\ndone\n")
+			f.write("   ibrun abinit disp-$i.in >& log\ndone\n")
 		f.close()
 		
 	def gen_job_scripts_multi(self,N,n,njob,P):	
@@ -283,7 +285,8 @@ class material:
 				num_dict[str(i)]=contents
 		njob_ = len(num_dict)
 		for idx in range(njob_):
-			self.jobid = self.id+'_'+self.subid + '_' + str(idx)
+			# self.jobid = self.id+'_'+self.subid + '_' + str(idx)
+			self.jobid = self.id + '_' + str(idx)	#!
 			start = num_dict[str(idx)][0] 
 			end = num_dict[str(idx)][-1] 
 			template = Template(input_template)
@@ -297,7 +300,7 @@ class material:
 				f.write("   abinit disp-$i.in >& log\ndone\n")
 			else:
 				# f.write(f"   mpirun -x {N*n} abinit disp-$i.in >& log\ndone\n")
-    			f.write(f"   ibrun abinit disp-$i.in >& log\ndone\n")
+				f.write(f"   ibrun abinit disp-$i.in >& log\ndone\n")
 			f.close()
 
 
