@@ -71,13 +71,13 @@ def managing_job(workdir0,jobid,njob):
                 if not len(pieces):
                     break
                 counts[ pieces[2] ] += 1
-                print(f'counts[ pieces[2] ]: for {pieces[2]}', counts[ pieces[2] ])
+                # print(f'counts[ pieces[2] ]: for {pieces[2]}', counts[ pieces[2] ])
             # print(counts)   #!
             if counts[jobid+'_'+str(j)] == 0 and not unfinish_jobs:
                 unfinish_list[j] = False
             elif counts[jobid+'_'+str(j)] == 0 and unfinish_jobs:
                 a = jobid+'_'+str(j)
-                print(f'count ({a}): ', counts[jobid+'_'+str(j)]) #!
+                # print(f'count ({a}): ', counts[jobid+'_'+str(j)]) #!
                 f = open(os.path.join(workdir,f"run_{j}.sh"),'r')
                 lines = f.readlines()
                 f.close()
