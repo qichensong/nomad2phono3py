@@ -249,10 +249,13 @@ class material:
 		# total number of displacement files
 		self.n_disp_tot = len(dirs)
 
-	def gen_job_scripts(self,N,n,P):
+	def gen_job_scripts(self,N,n,P,screen=False):
 		# The slurm job name
 		# self.jobid = self.id+'_'+self.subid
-		self.jobid = self.id# +'_'+self.subid	#!
+		if screen:
+			self.jobid = self.id + '_X'
+		else: 
+			self.jobid = self.id# +'_'+self.subid	#!
 		# Go to work directory 
 		os.chdir(self.workdir)
 		# The job should be monitored such that when old
@@ -272,7 +275,7 @@ class material:
 			f.write("   ibrun abinit disp-$i.in >& log\ndone\n")
 		f.close()
 		
-	def gen_job_scripts_multi(self,N,n,njob,P):	
+	def gen_job_scripts_multi(self,N,n,njob,P,screen=False):	
 		os.chdir(self.workdir)
 		dirs=glob.glob(os.path.join(self.workdir,"supercell-*.in"))
 		ndisp = len(dirs) 
@@ -286,7 +289,10 @@ class material:
 		njob_ = len(num_dict)
 		for idx in range(njob_):
 			# self.jobid = self.id+'_'+self.subid + '_' + str(idx)
-			self.jobid = self.id + '_' + str(idx)	#!
+			if screen:
+				self.jobid = self.id + '_X'
+			else: 
+				self.jobid = self.id + '_' + str(idx)	#!
 			start = num_dict[str(idx)][0] 
 			end = num_dict[str(idx)][-1] 
 			template = Template(input_template)
@@ -297,10 +303,10 @@ class material:
 			f.write("for i in {{{0:05d}..{1:05d}}}\ndo\n".format(start,end))
 			f.write("   cat header.in supercell-$i.in >| disp-$i.in;\n")
 			if P=='small':
-				f.write("   abinit disp-$i.in >& log\ndone\n")
+				f.write("   abinit disp-$i.in >& log;\ndone\n")	#230325 add ';'
 			else:
 				# f.write(f"   mpirun -x {N*n} abinit disp-$i.in >& log\ndone\n")
-				f.write(f"   ibrun abinit disp-$i.in >& log\ndone\n")
+				f.write(f"   ibrun abinit disp-$i.in >& log;\ndone\n")	#230325 add ';'
 			f.close()
 
 

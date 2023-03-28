@@ -76,7 +76,7 @@ def managing_job(workdir0,jobid,njob):
             if counts[jobid+'_'+str(j)] == 0 and not unfinish_jobs:
                 unfinish_list[j] = False
             elif counts[jobid+'_'+str(j)] == 0 and unfinish_jobs:
-                a = jobid+'_'+str(j)
+                # a = jobid+'_'+str(j)
                 # print(f'count ({a}): ', counts[jobid+'_'+str(j)]) #!
                 f = open(os.path.join(workdir,f"run_{j}.sh"),'r')
                 lines = f.readlines()
