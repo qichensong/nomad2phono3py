@@ -23,17 +23,17 @@ def need_action(mpid, jobdir, maxdisps):    # check if the $maxdisps files of di
             score += 1
     return score<maxdisps
 
-def get_scripts(mpids,subid,nomaddir,jobdir,psdir,ndim,N,n,queue,njob=1):
+def get_scripts(mpids,subid,nomaddir,jobdir,psdir,ndim,N,n,queue,screen,njob=1):
     for mpid in mpids: 
         mpid = str(mpid)
         m1 = material(mpid,subid,nomaddir,jobdir,psdir)
         m1.get_abinit_vars()
         m1.gen_header(ndim,ndim,ndim)
         m1.run_phono3py()
-        m1.gen_job_scripts(N=N,n=n,P=queue,screen=True)
-        m1.gen_job_scripts_multi(N=N,n=n,njob=njob,P=queue,screen=True)
+        m1.gen_job_scripts(N=N,n=n,P=queue,screen=screen)
+        m1.gen_job_scripts_multi(N=N,n=n,njob=njob,P=queue,screen=screen)
 
-def screen_mpids(mpids, maxdisps, maxjobs, skips, jobdir, logs_dir):
+def screen_mpids(mpids, maxdisps, maxjobs, skips, jobdir, logs_dir, screen):
     unfinished = True
     record = []
     len_all = len(mpids)    # total num of mpids to run
@@ -65,7 +65,7 @@ def screen_mpids(mpids, maxdisps, maxjobs, skips, jobdir, logs_dir):
                 break
             counts[ pieces[2] ] += 1
         running_jobs = sorted(list(counts.keys()))  # list of all running job names in sq
-        xjobs = [jb[:-2] for jb in running_jobs if jb.endswith('X')]    # list of all job names submitted by this program (ends with X)
+        xjobs = [jb[:len(screen)] for jb in running_jobs if jb.endswith(screen)]    # list of all job names submitted by this program (ends with X)
         job_dict = {mpid:[] for mpid in xjobs}
         cmd = os.path.expandvars("squeue -u $USER")
         piper = sp.Popen(cmd, stdout = sp.PIPE, stderr = sp.PIPE, shell = True)
@@ -77,9 +77,9 @@ def screen_mpids(mpids, maxdisps, maxjobs, skips, jobdir, logs_dir):
             if not len(pieces):
                 break
             mpid_sq = pieces[2][:-2]    #mpid from job name
-            sqid = int(pieces[0])   #JOBID in sq
+            sqid = int(pieces[0])   #JOBID in squeue
             if mpid_sq in xjobs:
-                job_dict[pieces[2][:-2]].append(sqid)
+                job_dict[mpid_sq].append(sqid)
 
         completions = {}    # show how many disp files are done for each of running mpids in sq.
         for mpid in xjobs:
@@ -147,7 +147,7 @@ def screen_mpids(mpids, maxdisps, maxjobs, skips, jobdir, logs_dir):
         time.sleep(x)
         
 if __name__=='__main__':
-    mpids_file = '/work2/09337/ryotaro/frontera/abinit_ro/save/natm2_scf1.txt'
+    mpids_file = '/work2/09337/ryotaro/frontera/abinit_ro/save/natm3_scf1.txt'
     nomaddir='/work2/09337/ryotaro/frontera/abinit_ro/scf/'
     jobdir='/work2/09337/ryotaro/frontera/abinit_ro/nomad2phono3py/jobs/'
     psdir = "/work2/09337/ryotaro/frontera/abinit_ro/ONCVPSP-PBEsol-PDv0.3/"
@@ -158,8 +158,9 @@ if __name__=='__main__':
     N=1
     n=1
     queue='small'
-    maxdisps = 5    # stop running job if certain number of disp-*abo are completed.
-    maxjobs = 20    # max number of jobs to submit at one time. 
+    maxdisps = 3    # stop running job if certain number of disp-*abo are completed.
+    maxjobs = 3#20    # max number of jobs to submit at one time. 
+    screen='Y'
     generate_scripts=False
     # the mpids which has already run in ryotaro's account. We exclude these from job lists. 
     skips1 = sorted([1002124, 1087, 149, 1672, 21511, 315, 441, 5072, 632319, 866291, 
@@ -177,10 +178,10 @@ if __name__=='__main__':
     mpids = sorted([int(mpid[:-1]) for mpid in mpids])
     print(mpids)
     print('mpid: ', len(mpids))
-    mpids = sorted([int(mpid) for mpid in mpids if mpid <= get_median(mpids)])  # split the job into half for ryotaro and qcsong account. 
+    # mpids = sorted([int(mpid) for mpid in mpids if mpid <= get_median(mpids)])  # split the job into half for ryotaro and qcsong account. 
     print(mpids)
     print('mpid: ', len(mpids))
     
     if generate_scripts:
-        get_scripts(mpids,subid,nomaddir,jobdir,psdir,ndim,N,n,queue,njob=1)
-    screen_mpids(mpids, maxdisps, maxjobs, skips, jobdir, logs_dir)
+        get_scripts(mpids,subid,nomaddir,jobdir,psdir,ndim,N,n,queue,screen=screen,njob=1)
+    screen_mpids(mpids, maxdisps, maxjobs, skips, jobdir, logs_dir, screen)

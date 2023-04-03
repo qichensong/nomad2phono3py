@@ -249,11 +249,11 @@ class material:
 		# total number of displacement files
 		self.n_disp_tot = len(dirs)
 
-	def gen_job_scripts(self,N,n,P,screen=False):
+	def gen_job_scripts(self,N,n,P,screen=None):
 		# The slurm job name
 		# self.jobid = self.id+'_'+self.subid
-		if screen:
-			self.jobid = self.id + '_X'
+		if screen is not None:
+			self.jobid = self.id + screen
 		else: 
 			self.jobid = self.id# +'_'+self.subid	#!
 		# Go to work directory 
@@ -275,7 +275,7 @@ class material:
 			f.write("   ibrun abinit disp-$i.in >& log\ndone\n")
 		f.close()
 		
-	def gen_job_scripts_multi(self,N,n,njob,P,screen=False):	
+	def gen_job_scripts_multi(self,N,n,njob,P,screen=None):	
 		os.chdir(self.workdir)
 		dirs=glob.glob(os.path.join(self.workdir,"supercell-*.in"))
 		ndisp = len(dirs) 
@@ -289,8 +289,8 @@ class material:
 		njob_ = len(num_dict)
 		for idx in range(njob_):
 			# self.jobid = self.id+'_'+self.subid + '_' + str(idx)
-			if screen:
-				self.jobid = self.id + '_X'
+			if screen is not None:
+				self.jobid = self.id + screen
 			else: 
 				self.jobid = self.id + '_' + str(idx)	#!
 			start = num_dict[str(idx)][0] 

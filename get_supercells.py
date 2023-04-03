@@ -10,7 +10,7 @@ def get_median(test_list):
     return median
 
 if __name__=='__main__':
-    mpids_file = '/work2/09337/ryotaro/frontera/abinit_ro/save/natm2_scf1.txt'
+    mpids_file = '/work2/09337/ryotaro/frontera/abinit_ro/save/natm3_scf1.txt'
     nomaddir='/work2/09337/ryotaro/frontera/abinit_ro/scf/'
     jobdir='/work2/09337/ryotaro/frontera/abinit_ro/nomad2phono3py/jobs/'
     psdir = "/work2/09337/ryotaro/frontera/abinit_ro/ONCVPSP-PBEsol-PDv0.3/"
@@ -30,7 +30,7 @@ if __name__=='__main__':
     mpids = sorted([int(mpid[:-1]) for mpid in mpids])
     print(mpids)
     print('mpid: ', len(mpids))
-    mpids = sorted([int(mpid) for mpid in mpids if mpid <= get_median(mpids)])
+    # mpids = sorted([int(mpid) for mpid in mpids if mpid <= get_median(mpids)])
     print(mpids)
     print('mpid: ', len(mpids))
 
