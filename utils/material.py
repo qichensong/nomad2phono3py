@@ -3,7 +3,8 @@ import numpy as np
 import re
 import glob
 from string import Template
-from input_template import input_template
+from utils.input_template import input_template
+idx2str = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 class material:
 	def __init__(self, id, subid, dbasedir, destdir, psdir):
@@ -292,7 +293,8 @@ class material:
 			if screen is not None:
 				self.jobid = self.id + screen
 			else: 
-				self.jobid = self.id + '_' + str(idx)	#!
+				# self.jobid = self.id + '_' + str(idx)	#!
+				self.jobid = self.id + idx2str[idx]	#!
 			start = num_dict[str(idx)][0] 
 			end = num_dict[str(idx)][-1] 
 			template = Template(input_template)

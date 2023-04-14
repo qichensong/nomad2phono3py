@@ -13,9 +13,9 @@ https://phonopy.github.io/phono3py/install.html
 ## input file for each material (set as nomaddir)
 https://www.dropbox.com/scl/fo/cfonzy5h3aqvxp471y6q6/h?dl=0&rlkey=rxgjesxofvi178dyrohb524dh
 
-## pseudopotential 
+## pseudopotential (set as psdir)
 https://www.dropbox.com/scl/fo/c5zba4pv7ckwluile1iwi/h?dl=0&rlkey=x9jvw1mx3p4769pzuoh8xtccd
 
-# create new directory
+# create new directory (set as jobdir)
 directory to save the finished jobs.
 

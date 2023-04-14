@@ -5,8 +5,9 @@ from collections import defaultdict
 import time
 import re
 from datetime import datetime
-from read_abo import abo_done, screen_incomplete
+from utils.read_abo import abo_done, screen_incomplete
 import numpy as np
+idx2str = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 def managing_job(workdir0,jobid,njob):
     starttime = datetime.now()
@@ -73,9 +74,12 @@ def managing_job(workdir0,jobid,njob):
                 counts[ pieces[2] ] += 1
                 # print(f'counts[ pieces[2] ]: for {pieces[2]}', counts[ pieces[2] ])
             # print(counts)   #!
-            if counts[jobid+'_'+str(j)] == 0 and not unfinish_jobs:
+            # if counts[jobid+'_'+str(j)] == 0 and not unfinish_jobs:
+            #     unfinish_list[j] = False
+            # elif counts[jobid+'_'+str(j)] == 0 and unfinish_jobs:
+            if counts[jobid+idx2str[j]] == 0 and not unfinish_jobs:
                 unfinish_list[j] = False
-            elif counts[jobid+'_'+str(j)] == 0 and unfinish_jobs:
+            elif counts[jobid+idx2str[j]] == 0 and unfinish_jobs:
                 # a = jobid+'_'+str(j)
                 # print(f'count ({a}): ', counts[jobid+'_'+str(j)]) #!
                 f = open(os.path.join(workdir,f"run_{j}.sh"),'r')

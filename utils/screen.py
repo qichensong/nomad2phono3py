@@ -1,6 +1,6 @@
-from material import material
-from job_manage import managing_job
-from read_abo import abo_done
+from utils.material import material
+from utils.job_manage import managing_job
+from utils.read_abo import abo_done
 import os
 import glob
 import subprocess as sp
@@ -9,8 +9,15 @@ import time
 import re
 from datetime import datetime
 import numpy as np
-from get_supercells import get_median
 
+def get_median(test_list):
+    if len(test_list)%2 == 0:
+        mid = int(len(test_list) / 2)
+        median = 0.5*(test_list[mid-1]+test_list[mid])
+    else: 
+        mid = int((len(test_list)-1) / 2)
+        median = test_list[mid]
+    return median
 
 def need_action(mpid, jobdir, maxdisps):    # check if the $maxdisps files of disp-*.abo are completed in one workdir
     workdir = os.path.join(jobdir,str(mpid))
