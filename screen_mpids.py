@@ -65,7 +65,7 @@ def screen_mpids(mpids, maxdisps, maxjobs, skips, jobdir, logs_dir, screen):
                 break
             counts[ pieces[2] ] += 1
         running_jobs = sorted(list(counts.keys()))  # list of all running job names in sq
-        xjobs = [jb[:len(screen)] for jb in running_jobs if jb.endswith(screen)]    # list of all job names submitted by this program (ends with X)
+        xjobs = [jb[:-len(screen)] for jb in running_jobs if jb.endswith(screen)]    # list of all job names submitted by this program (ends with X)
         job_dict = {mpid:[] for mpid in xjobs}
         cmd = os.path.expandvars("squeue -u $USER")
         piper = sp.Popen(cmd, stdout = sp.PIPE, stderr = sp.PIPE, shell = True)
@@ -76,7 +76,7 @@ def screen_mpids(mpids, maxdisps, maxjobs, skips, jobdir, logs_dir, screen):
             pieces = line.decode().strip().split()
             if not len(pieces):
                 break
-            mpid_sq = pieces[2][:-2]    #mpid from job name
+            mpid_sq = pieces[2][:-len(screen)]    #mpid from job name
             sqid = int(pieces[0])   #JOBID in squeue
             if mpid_sq in xjobs:
                 job_dict[mpid_sq].append(sqid)
@@ -159,7 +159,7 @@ if __name__=='__main__':
     n=1
     queue='small'
     maxdisps = 3    # stop running job if certain number of disp-*abo are completed.
-    maxjobs = 3#20    # max number of jobs to submit at one time. 
+    maxjobs = 15    # max number of jobs to submit at one time. 
     screen='Y'
     generate_scripts=False
     # the mpids which has already run in ryotaro's account. We exclude these from job lists. 
