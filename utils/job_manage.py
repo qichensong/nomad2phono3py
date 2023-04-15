@@ -27,6 +27,8 @@ def managing_job(workdir0,jobid,njob):
     njob_ = len(num_dict)
     unfinish_list = [True for i in range(njob_)]
     while unfinished:
+        unfinished=not np.all(np.array(unfinish_list)<1)
+        # print('unfinihsed: ', unfinished)
         dirs=glob.glob(os.path.join(workdir,"disp-*.abo"))
         disp_indices = sorted([int(dir[-9:-4]) for dir in dirs])
         dirs_dict = {}
@@ -39,10 +41,12 @@ def managing_job(workdir0,jobid,njob):
         now = datetime.now()
         current_time = now.strftime("%H:%M:%S")
         ncurrent = len(dirs)
-        if ncurrent == 0:
-            ncurrent = 1
-        print(f'[{current_time}] ({jobid}) ' +' {:.2f}'.format((ncurrent-1)/(ndisp)*100)+' % finished')
-        record.append(f'[{now}] ({jobid}) ' +' {:.2f}'.format((ncurrent-1)/(ndisp)*100)+ f' % finished, remaining {dirs_dict}\n')		#!!
+        # if ncurrent == 0:
+        #     ncurrent = 1
+        # print(f'[{current_time}] ({jobid}) ' +' {:.2f}'.format((ncurrent-1)/(ndisp)*100)+' % finished')
+        # record.append(f'[{now}] ({jobid}) ' +' {:.2f}'.format((ncurrent-1)/(ndisp)*100)+ f' % finished, remaining {dirs_dict}\n')		#!!
+        print(f'[{current_time}] ({jobid}) ' +' {:.2f}'.format((ncurrent)/(ndisp)*100)+' % finished')
+        record.append(f'[{now}] ({jobid}) ' +' {:.2f}'.format((ncurrent)/(ndisp)*100)+ f' % finished, remaining {dirs_dict}\n')		#!!
         with open(f'{workdir}/{jobid}_log_{starttime}.txt', 'w') as ff:
             for r in record:
                     ff.write(r)
@@ -52,6 +56,8 @@ def managing_job(workdir0,jobid,njob):
             else:
                 unfinish_jobs = False
             unfinish_list[j] = unfinish_jobs
+            
+            # print("unfinished list: ", unfinish_list)
             cmd = os.path.expandvars("squeue -u $USER")
             piper = sp.Popen(cmd, stdout = sp.PIPE, stderr = sp.PIPE, shell = True)
             STAT_CODE = [ "PD","R","CG"]
@@ -72,11 +78,7 @@ def managing_job(workdir0,jobid,njob):
                 if not len(pieces):
                     break
                 counts[ pieces[2] ] += 1
-                # print(f'counts[ pieces[2] ]: for {pieces[2]}', counts[ pieces[2] ])
-            # print(counts)   #!
-            # if counts[jobid+'_'+str(j)] == 0 and not unfinish_jobs:
-            #     unfinish_list[j] = False
-            # elif counts[jobid+'_'+str(j)] == 0 and unfinish_jobs:
+
             if counts[jobid+idx2str[j]] == 0 and not unfinish_jobs:
                 unfinish_list[j] = False
             elif counts[jobid+idx2str[j]] == 0 and unfinish_jobs:
@@ -103,6 +105,7 @@ def managing_job(workdir0,jobid,njob):
         # check job status every x seconds
         x = 30
         time.sleep(x)
+    print(f'{jobid} completed')
 		
 
 if __name__ == "__main__":

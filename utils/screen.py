@@ -21,24 +21,29 @@ def get_median(test_list):
 
 def need_action(mpid, jobdir, maxdisps):    # check if the $maxdisps files of disp-*.abo are completed in one workdir
     workdir = os.path.join(jobdir,str(mpid))
+    # print('workdir: ', workdir)
     lst = os.listdir(workdir) 
     disps=glob.glob(os.path.join(workdir,"disp-*.abo"))
+    spcells=glob.glob(os.path.join(workdir,"supercell-*.in"))
     score = 0
     for dfile in disps:
         idx = int(dfile[-9:-4])
         if abo_done(workdir, idx): # if disp-$idx.abo is completed
             score += 1
-    return score<maxdisps
+    # print('[score, spcells] = ', [score, len(spcells)])
+    if maxdisps is not None:
+        return score<maxdisps
+    else: 
+        return score<len(spcells)-1
 
-def get_scripts(mpids,subid,nomaddir,jobdir,psdir,ndim,N,n,queue,screen,njob=1):
+def get_scripts(mpids,subid,nomaddir,jobdir,psdir,ndim,N,n,queue,screen,cluster,njob=1):
     for mpid in mpids: 
         mpid = str(mpid)
         m1 = material(mpid,subid,nomaddir,jobdir,psdir)
         m1.get_abinit_vars()
-        m1.gen_header(ndim,ndim,ndim)
+        m1.gen_header(ndim,ndim,ndim,cluster)
         m1.run_phono3py()
-        m1.gen_job_scripts(N=N,n=n,P=queue,screen=screen)
-        m1.gen_job_scripts_multi(N=N,n=n,njob=njob,P=queue,screen=screen)
+        m1.gen_job_scripts_multi(N=N,n=n,njob=njob,P=queue,screen=screen, cluster=cluster)
 
 def screen_mpids(mpids, maxdisps, maxjobs, skips, jobdir, logs_dir, screen):
     unfinished = True
@@ -93,16 +98,17 @@ def screen_mpids(mpids, maxdisps, maxjobs, skips, jobdir, logs_dir, screen):
             workdir = os.path.join(jobdir,mpid)
             ddirs=glob.glob(os.path.join(workdir,"disp-*.abo"))
             completions[mpid]=len(ddirs)
-            if not need_action(mpid, jobdir, maxdisps):
-                score = 0
-                for dfile in ddirs:
-                    idx = int(dfile[-9:-4]) # idx of disp files. 
-                    if abo_done(workdir, idx):
-                        score += 1
+            if maxdisps is not None:
+                if not need_action(mpid, jobdir, maxdisps):
+                    score = 0
+                    for dfile in ddirs:
+                        idx = int(dfile[-9:-4]) # idx of disp files. 
+                        if abo_done(workdir, idx):
+                            score += 1
 
-                if score >= maxdisps:   # if aassigned number of disp files are generated stop running the job.
-                    print(f"[{mpid}] scancel {np.min([job_dict[mpid]])}")
-                    os.system(f"scancel {np.min([job_dict[mpid]])}")
+                    if score >= maxdisps:   # if aassigned number of disp files are generated stop running the job.
+                        print(f"[{mpid}] scancel {np.min([job_dict[mpid]])}")
+                        os.system(f"scancel {np.min([job_dict[mpid]])}")
 
             
         print('job_dict: ', job_dict)
@@ -122,20 +128,24 @@ def screen_mpids(mpids, maxdisps, maxjobs, skips, jobdir, logs_dir, screen):
                 pass
             else: 
                 mpid = xmpids[0]
-                print(mpid)
                 workdir = os.path.join(jobdir,mpid)
                 sdirs=glob.glob(os.path.join(workdir,"supercell-*.in"))
                 os.chdir(workdir)
             
                 # find from which disp-*.abo to run.
                 idx_from = 1
-                for idx in range(1, maxdisps+1):
+                if maxdisps is None:
+                    nfile = len(sdirs)-1
+                else: 
+                    nfile = maxdisps
+                for idx in range(1, nfile+1):
                     if not abo_done(workdir, idx):  # find the first unfinished disp*abo file.
                         idx_from = idx
                         break
                     else: 
                         continue                 
                 idx_to = len(sdirs)
+                print(f'[{mpid}] (from, to) = ', [idx_from, idx_to])
 
                 f = open(os.path.join(workdir,f"run_0.sh"),'r')
                 lines = f.readlines()
@@ -148,7 +158,6 @@ def screen_mpids(mpids, maxdisps, maxjobs, skips, jobdir, logs_dir, screen):
                 f = open(os.path.join(workdir,f"run_0.sh"),'w')
                 f.writelines(lines)
                 f.close()
-                print()
                 os.system(f'sbatch run_0.sh')
         x = 60
         time.sleep(x)
@@ -183,8 +192,8 @@ if __name__=='__main__':
     with open(mpids_file, 'r') as f:
         mpids = f.readlines()
     mpids = sorted([int(mpid[:-1]) for mpid in mpids])
-    print(mpids)
-    print('mpid: ', len(mpids))
+    # print(mpids)
+    # print('mpid: ', len(mpids))
     # mpids = sorted([int(mpid) for mpid in mpids if mpid <= get_median(mpids)])  # split the job into half for ryotaro and qcsong account. 
     print(mpids)
     print('mpid: ', len(mpids))

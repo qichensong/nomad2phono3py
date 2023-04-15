@@ -3,8 +3,7 @@ import numpy as np
 import re
 import glob
 from string import Template
-from utils.input_template import input_template
-from utils.input_template_cades import input_template_cades
+from utils.input_template import input_template, input_template_cades
 idx2str = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 class material:
@@ -123,7 +122,7 @@ class material:
 		
 		
 
-	def gen_header(self,nx,ny,nz):
+	def gen_header(self,nx,ny,nz,cluster='frontera'):
 		# Supercell dimensions 
 		self.nx = nx # supercell sizes for phono3py
 		self.ny = ny
@@ -140,7 +139,10 @@ class material:
 		self.headerfile = os.path.join(self.workdir,'header.in')
 		f = open(self.headerfile,'w')
 		f.write('#################\n')
-		f.write('paral_kgb 1\n') # parallel
+		if cluster=='ornl':
+			f.write('# paral_kgb 1\n') # parallel
+		else:
+			f.write('paral_kgb 1\n') # parallel
 		f.write('chkprim 0\n') # check primitive cell (default: 1)
 
 		# Gaussian smearing
@@ -298,7 +300,7 @@ class material:
 				self.jobid = self.id + idx2str[idx]	#!
 			start = num_dict[str(idx)][0] 
 			end = num_dict[str(idx)][-1] 
-			if cluster=='tacc':
+			if cluster!='ornl':
 				template = Template(input_template)
 				template = template.substitute(job=self.jobid,N=N,n=n,P=P)
 				self.runscript = os.path.join(self.workdir,f'run_{idx}.sh')
@@ -312,17 +314,20 @@ class material:
 					# f.write(f"   mpirun -x {N*n} abinit disp-$i.in >& log\ndone\n")
 					f.write(f"   ibrun abinit disp-$i.in >& log;\ndone\n")	#230325 add ';'
 				f.close()
-			elif cluster=='tacc':
+			elif cluster=='ornl':
 				template = Template(input_template_cades)
 				template = template.substitute(job=self.jobid,N=N,n=n,P=P)
 				self.runscript = os.path.join(self.workdir,f'run_{idx}.sh')
 				f = open(self.runscript,'w')
 				f.write(template)
-    			f.write(f'export ABI_PSPDIR={self.psdir}')
-				f.write(f'cd $SLURM_SUBMIT_DIR')
+				f.write(f'export ABI_PSPDIR={self.psdir}\n')
+				f.write(f'export OMP_NUM_THREADS=1\n')
+				f.write('ABINIT=/lustre/or-scratch/cades-virtues/proj-shared/abinit/src/abinit-9.8.3/virtues/src/98_main/abinit\n')
+				f.write(f'cd $SLURM_SUBMIT_DIR\n')
 				f.write("for i in {{{0:05d}..{1:05d}}}\ndo\n".format(start,end))
 				f.write("   cat header.in supercell-$i.in >| disp-$i.in;\n")
-    			f.write(f"   mpirun -n {n} $MPI_FLAGS $ABINIT disp-$i.in > log 2> err;\ndone\n")	#230325 add ';'
+				#f.write(f"   mpirun -n {n} $MPI_FLAGS $ABINIT disp-$i.in > log 2> err;\ndone\n")	#230325 add ';'
+				f.write(f"   mpirun -n {n} $MPI_FLAGS $ABINIT disp-$i.in >& log;\ndone\n")
 				f.close()
 
 
