@@ -4,6 +4,7 @@ import re
 import glob
 from string import Template
 from utils.input_template import input_template
+from utils.input_template_cades import input_template_cades
 idx2str = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 class material:
@@ -276,7 +277,7 @@ class material:
 			f.write("   ibrun abinit disp-$i.in >& log\ndone\n")
 		f.close()
 		
-	def gen_job_scripts_multi(self,N,n,njob,P,screen=None):	
+	def gen_job_scripts_multi(self,N,n,njob,P,screen=None,cluster='tacc'):	
 		os.chdir(self.workdir)
 		dirs=glob.glob(os.path.join(self.workdir,"supercell-*.in"))
 		ndisp = len(dirs) 
@@ -297,19 +298,31 @@ class material:
 				self.jobid = self.id + idx2str[idx]	#!
 			start = num_dict[str(idx)][0] 
 			end = num_dict[str(idx)][-1] 
-			template = Template(input_template)
-			template = template.substitute(job=self.jobid,N=N,n=n,P=P)
-			self.runscript = os.path.join(self.workdir,f'run_{idx}.sh')
-			f = open(self.runscript,'w')
-			f.write(template)
-			f.write("for i in {{{0:05d}..{1:05d}}}\ndo\n".format(start,end))
-			f.write("   cat header.in supercell-$i.in >| disp-$i.in;\n")
-			if P=='small':
-				f.write("   abinit disp-$i.in >& log;\ndone\n")	#230325 add ';'
-			else:
-				# f.write(f"   mpirun -x {N*n} abinit disp-$i.in >& log\ndone\n")
-				f.write(f"   ibrun abinit disp-$i.in >& log;\ndone\n")	#230325 add ';'
-			f.close()
-
+			if cluster=='tacc':
+				template = Template(input_template)
+				template = template.substitute(job=self.jobid,N=N,n=n,P=P)
+				self.runscript = os.path.join(self.workdir,f'run_{idx}.sh')
+				f = open(self.runscript,'w')
+				f.write(template)
+				f.write("for i in {{{0:05d}..{1:05d}}}\ndo\n".format(start,end))
+				f.write("   cat header.in supercell-$i.in >| disp-$i.in;\n")
+				if P=='small':
+					f.write("   abinit disp-$i.in >& log;\ndone\n")	#230325 add ';'
+				else:
+					# f.write(f"   mpirun -x {N*n} abinit disp-$i.in >& log\ndone\n")
+					f.write(f"   ibrun abinit disp-$i.in >& log;\ndone\n")	#230325 add ';'
+				f.close()
+			elif cluster=='tacc':
+				template = Template(input_template_cades)
+				template = template.substitute(job=self.jobid,N=N,n=n,P=P)
+				self.runscript = os.path.join(self.workdir,f'run_{idx}.sh')
+				f = open(self.runscript,'w')
+				f.write(template)
+    			f.write(f'export ABI_PSPDIR={self.psdir}')
+				f.write(f'cd $SLURM_SUBMIT_DIR')
+				f.write("for i in {{{0:05d}..{1:05d}}}\ndo\n".format(start,end))
+				f.write("   cat header.in supercell-$i.in >| disp-$i.in;\n")
+    			f.write(f"   mpirun -n {n} $MPI_FLAGS $ABINIT disp-$i.in > log 2> err;\ndone\n")	#230325 add ';'
+				f.close()
 
 
