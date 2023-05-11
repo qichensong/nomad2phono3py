@@ -11,3 +11,4 @@ if not os.path.exists(jobdir):
 	os.makedirs(jobdir)
 if not os.path.exists(logs_dir):
         os.makedirs(logs_dir)
+raw_dir = '/work2/09337/ryotaro/frontera/abinit_ro/phonon'

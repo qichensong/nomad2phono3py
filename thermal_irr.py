@@ -3,8 +3,6 @@ import h5py
 import numpy as np
 import phono3py
 from gen_hdf5 import nx,ny,nz, mpid
-from matplotlib.collections import LineCollection
-from matplotlib.cm import ScalarMappable
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import os
@@ -67,14 +65,15 @@ for i in range(0, len(temp), 10):
 		lifetime = lifetimes[i]
 		pl=ax.scatter(np.linalg.norm(q_ibz, axis=-1), lifetime[:, b_idx], color=cmap(b_idx/nb), label=f'Band{b_idx}')
 		# print(f'T={t}')
-		ax.set_title(f'T={t}')
+		ax.set_title(f'T={t}K')
 	ax.set_xlabel('$\|\|qpt\|\|$')
 	ax.set_ylabel('lifetime [ps]')
+	ax.set_yscale('log')
 	sm = plt.cm.ScalarMappable(cmap='jet', norm=plt.Normalize(vmin=0, vmax=nb-1))
 	sm.set_array([])
 	fig.colorbar(sm, ax=ax, label='band idx')
 	fig.show()
-	fig.savefig(os.path.join(path, f'{mpid}_lifetime_b_T{t}K.png'))
+	fig.savefig(os.path.join(path, f'{mpid}_lifetime_b_T{t}K_log.png'))
 
 
 #%%
@@ -92,11 +91,12 @@ for b_idx in range(nb):
 		ax.set_title(f'Band{b_idx}')
 	ax.set_xlabel('$\|\|qpt\|\|$')
 	ax.set_ylabel('lifetime [ps]')
+	ax.set_yscale('log')
 	sm = plt.cm.ScalarMappable(cmap='jet', norm=plt.Normalize(vmin=temp.min(), vmax=temp.max()))
 	sm.set_array([])
 	fig.colorbar(sm, ax=ax, label='Temp [K]')
 	fig.show()
-	fig.savefig(os.path.join(path, f'{mpid}_lifetime_T_b{b_idx}.png'))
+	fig.savefig(os.path.join(path, f'{mpid}_lifetime_T_b{b_idx}_log.png'))
  
 #%%
 # group velocity
@@ -158,11 +158,20 @@ for iq, q in enumerate(q_ibz):
 out = kcum*hbar**3/(3*vol*kb)
 
 #%%
+# load harmonic phonon calculation data.
 from utils.load import load_band_structure_data
 data_dir = './data'
-raw_dir = './data/phonon'
 data_file = 'DFPT_band_structure.pkl'
 data = load_band_structure_data(data_dir, raw_dir, data_file)
+
+#%%
+idx = 0
+dline = data[data['id']=='mp-149']
+band, qpts = dline['band_structure'].item(), dline['qpts'].item()
+
+#%%
+# interpolation
+
 
 
 #%%

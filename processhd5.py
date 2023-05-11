@@ -35,10 +35,10 @@ freq_ibz = f1['frequency'][:]
 freq_full = f2['frequency'][:]
 q_full = f2['grid_address'][:]
 #print(freq_full.shape)
-q_ibz = f1['qpoint'][:]		# irreducibl bz
+q_ibz = f1['qpoint'][:]		# irreducible bz
 q_ibz_integer = np.zeros(q_ibz.shape,dtype=int)
 for i in range(len(q_ibz)):
-	q_ibz_integer[i,0] = q_ibz[i,0]* nx		#  why do we multiply this?
+	q_ibz_integer[i,0] = q_ibz[i,0]* nx		#  why do we multiply this? -> to make fractional -> integer
 	q_ibz_integer[i,1] = q_ibz[i,1]* ny
 	q_ibz_integer[i,2] = q_ibz[i,2]* nz
 #%%
@@ -51,7 +51,8 @@ nb = freq_full.shape[1]
 omega_full_3d = np.zeros((nx,ny,nz,nb),dtype=int)
 gamma_full_3d = np.zeros((nTemp,nx,ny,nz,nb),dtype=float)
 
-for i in range(len(q_full)):
+for i in range(len(q_full)):	# for qpoints of full 3D mesh!
+	print("kappa-m"+name+"-g"+str(idx)+".hdf5")
 	idx = (ph3.grid.get_indices_from_addresses(q_full[i,:]))
 	omega_full_3d[q_full[i,0],q_full[i,1],q_full[i,2],:]=freq_full[idx,:]
 	f3 = h5py.File(os.path.join(path, "kappa-m"+name+"-g"+str(idx)+".hdf5"))	#!
@@ -68,7 +69,6 @@ fig, axs = plt.subplots(1,2, figsize=(10, 5))
 for ibranch in range(nb):
 	interp_fw = RegularGridInterpolator((x, y, z), omega_full_3d[:,:,:,ibranch])	# Interpolationn of omega
 	interp_fg = RegularGridInterpolator((x, y, z), gamma_full_3d[T_index,:,:,:,ibranch])	# Interpolationn of gamma
-
 	GXx = np.linspace(0,(nx+1)//2,100)
 	GXy = np.zeros(GXx.shape)
 	GXz = np.zeros(GXx.shape)
